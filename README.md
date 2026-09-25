@@ -1,0 +1,3 @@
+DIA 1 - Tras haber hecho la fase 1 del diagrama de entidades y el logico, realice el diagrama fisico y la creacion del proyecto en InteliJ, donde plantee el orden de paquetes y carpetas, e hice pruebas con la base de datos y la API donde conseguí introducir un dato de prueba y que se mostrase ese dato de la tabla Usuario que cree a un Usuario con rol de PROFESOR, configure un poco del spring security
+
+DIA 2 - Arregle el inicio de sesion que daba error al iniciar sesion con los usuarios insertados en la base de datos, mas la paginad de home page y login, la estetica de la pagina no me convence aun sobretodo los colores ni tampoco la estructura creo que tengo que enfocarlo mas a una red social

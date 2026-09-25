@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio - Cocina</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Inicio</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/cocinero/inicio}" class="nav-enlace-activo">Inicio</a>
+                <a th:href="@{/cocinero/platos}" class="nav-enlace">Platos</a>
+                <a th:href="@{/cocinero/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/cocinero/reservas}" class="nav-enlace">Reservas</a>
+                <a th:href="@{/cocinero/encuestas}" class="nav-enlace">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Cocinero</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+<main class="contenido-principal">
+    <h2 class="titulo-seccion">Bienvenido/a al Área de Cocina</h2>
+    <p class="subtitulo-seccion">Gestiona los menús y platos del día.</p>
+    
+    <div class="grid-stats">
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="stat-numero" th:text="${platosTotales}">0</div>
+                <h3 class="stat-etiqueta">Platos Registrados</h3>
+            </div>
+            <div class="stat-icono">🥘</div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Disponibles en el sistema</p>
+    </div>
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="stat-numero" th:text="${menusTotales}">0</div>
+                <h3 class="stat-etiqueta">Menús Programados</h3>
+            </div>
+            <div class="stat-icono">📋</div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Historial de menús</p>
+    </div>
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="stat-numero" th:text="${reservasHoy}">0</div>
+                <h3 class="stat-etiqueta">Reservas Hoy</h3>
+            </div>
+            <div class="stat-icono">📅</div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">A preparar hoy</p>
+    </div>
+
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-titulo">Acciones Rápidas</h3>
+            </div>
+            <div class="card-cuerpo flex flex-wrap gap-3">
+                <a th:href="@{/cocinero/platos/nuevo}" class="btn-primary">Añadir Nuevo Plato</a>
+                <a th:href="@{/cocinero/menus/nuevo}" class="btn-secondary">Programar Menú</a>
+                <a th:href="@{/cocinero/reservas(fecha=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')})}" class="btn-secondary">Ver Reservas de Hoy</a>
+            </div>
+        </div>
+    </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

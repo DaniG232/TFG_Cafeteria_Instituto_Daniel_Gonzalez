@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Menús Disponibles - Profesor</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Menús</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/profesor/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/profesor/menus}" class="nav-enlace-activo">Menús</a>
+                <a th:href="@{/profesor/reservas}" class="nav-enlace">Mis Reservas</a>
+                <a th:href="@{/profesor/encuestas}" class="nav-enlace">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Profesor</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <h2 class="titulo-seccion">Menús Disponibles</h2>
+        <p class="subtitulo-seccion">Selecciona un menú y realiza tu reserva.</p>
+        
+        <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+        <div th:if="${error}" class="alerta-error" th:text="${error}"></div>
+        <div th:if="${menus.isEmpty()}" class="alerta-info bg-blue-50 border-blue-200 text-blue-700">No hay menús programados disponibles para reservar en los próximos días.</div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div th:each="menu : ${menus}" class="card flex flex-col justify-between hover:border-[#0F766E] transition-colors border-2">
+                <div class="card-header border-b border-gray-100">
+                    <h3 class="card-titulo text-[#0F766E]" th:text="'Menú del ' + ${menu.fecha}"></h3>
+                </div>
+                <div class="card-cuerpo flex-grow">
+                    <div class="space-y-3 text-sm">
+                        <p><span class="font-semibold text-gray-700">Primero:</span> <span class="text-gray-600" th:text="${menu.primerPlato.nombre}"></span></p>
+                        <p><span class="font-semibold text-gray-700">Segundo:</span> <span class="text-gray-600" th:text="${menu.segundoPlato.nombre}"></span></p>
+                        <p><span class="font-semibold text-gray-700">Postre:</span> <span class="text-gray-600" th:text="${menu.postre.nombre}"></span></p>
+                        <p><span class="font-semibold text-gray-700">Bebida:</span> <span class="text-gray-600" th:text="${menu.bebida.nombre}"></span></p>
+                    </div>
+                </div>
+                <div class="card-pie flex justify-between items-center border-t border-gray-100 p-4">
+                    <span class="text-2xl font-bold text-gray-900" th:text="${menu.precio + ' €'}"></span>
+                    <a th:href="@{/profesor/pago(idMenu=${menu.idMenu})}" class="btn-primary btn-sm">Reservar</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

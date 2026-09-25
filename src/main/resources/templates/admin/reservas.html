@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservas - Panel de Administración</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Reservas</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/admin/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/admin/usuarios}" class="nav-enlace">Usuarios</a>
+                <a th:href="@{/admin/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/admin/reservas}" class="nav-enlace-activo">Reservas</a>
+                <a th:href="@{/admin/encuestas}" class="nav-enlace">Encuestas</a>
+                <a th:href="@{/admin/avisos}" class="nav-enlace">Avisos</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Admin</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="titulo-seccion">Historial de Reservas</h2>
+                <p class="subtitulo-seccion">Gestiona el estado de todas las reservas del sistema.</p>
+            </div>
+        </div>
+
+        <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha Menú</th>
+                        <th>Profesor</th>
+                        <th>Menú Precio</th>
+                        <th>Pagado</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="reserva : ${reservas}">
+                        <td th:text="${reserva.idReserva}"></td>
+                        <td class="font-medium" th:text="${reserva.menu.fecha}"></td>
+                        <td th:text="${reserva.usuario.nombre}"></td>
+                        <td class="font-medium" th:text="${reserva.menu.precio + ' €'}"></td>
+                        <td th:text="${reserva.precioPagado != null ? reserva.precioPagado + ' €' : '-'}"></td>
+                        <td>
+                            <span th:if="${reserva.estado == 'PENDIENTE'}" class="badge-naranja">PENDIENTE</span>
+                            <span th:if="${reserva.estado == 'RECOGIDO'}" class="badge-verde">RECOGIDO</span>
+                            <span th:if="${reserva.estado == 'CANCELADO'}" class="badge-rojo">CANCELADO</span>
+                            <span th:if="${reserva.estado == 'NO_RECOGIDO'}" class="badge-gris">NO RECOGIDO</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/reservas/{id}/estado(id=${reserva.idReserva})}" method="post">
+                                <select name="estado" class="form-input py-1.5 w-36" onchange="this.form.submit()">
+                                    <option value="PENDIENTE" th:selected="${reserva.estado == 'PENDIENTE'}">PENDIENTE</option>
+                                    <option value="RECOGIDO" th:selected="${reserva.estado == 'RECOGIDO'}">RECOGIDO</option>
+                                    <option value="CANCELADO" th:selected="${reserva.estado == 'CANCELADO'}">CANCELADO</option>
+                                    <option value="NO_RECOGIDO" th:selected="${reserva.estado == 'NO_RECOGIDO'}">NO RECOGIDO</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

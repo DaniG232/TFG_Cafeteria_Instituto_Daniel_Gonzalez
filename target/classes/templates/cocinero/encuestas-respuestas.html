@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Respuestas de Encuesta - Cocina</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Encuestas</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/cocinero/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/cocinero/platos}" class="nav-enlace">Platos</a>
+                <a th:href="@{/cocinero/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/cocinero/reservas}" class="nav-enlace">Reservas</a>
+                <a th:href="@{/cocinero/encuestas}" class="nav-enlace-activo">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Cocinero</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="titulo-seccion">Resultados: <span th:text="${encuesta.titulo}" class="text-[#0F766E]"></span></h2>
+                <p class="subtitulo-seccion">Consulta las respuestas recibidas.</p>
+            </div>
+            <a th:href="@{/cocinero/encuestas}" class="btn-secondary">Volver a Encuestas</a>
+        </div>
+        
+        <div class="card p-6 mb-8">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Información de la Encuesta</h3>
+            <p class="mb-2 text-sm"><span class="font-medium text-gray-700">Descripción:</span> <span class="text-gray-900" th:text="${encuesta.descripcion}"></span></p>
+            <p class="mb-2 text-sm"><span class="font-medium text-gray-700">Fecha Creación:</span> <span class="text-gray-900" th:text="${encuesta.fechaCreacion}"></span></p>
+            <p class="text-sm"><span class="font-medium text-gray-700">Total de preguntas:</span> <span class="text-gray-900" th:text="${encuesta.preguntas.size()}"></span></p>
+        </div>
+        
+        <h3 class="text-xl font-bold text-gray-900 mb-6">Detalle de Respuestas</h3>
+        
+        <div th:if="${respuestasPorPregunta.isEmpty()}" class="alerta-error bg-amber-50 border-amber-200 text-amber-700">Aún no hay preguntas en esta encuesta.</div>
+        
+        <div th:unless="${respuestasPorPregunta.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div th:each="pregunta, iterStat : ${encuesta.preguntas}" class="card p-6">
+                <p class="font-bold text-gray-900 mb-4" th:text="${iterStat.count} + '. ' + ${pregunta.texto}"></p>
+                <div th:each="r : ${respuestasPorPregunta.get(pregunta.idPregunta)}">
+                    <p class="text-gray-700 bg-gray-50 p-3 rounded-lg mt-3 text-sm border-l-4 border-[#0F766E]" th:text="${r}"></p>
+                </div>
+                <div th:if="${respuestasPorPregunta.get(pregunta.idPregunta).isEmpty()}">
+                    <p class="text-gray-400 text-sm italic mt-3">Sin respuestas aún.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

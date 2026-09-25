@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Responder Encuesta - Profesor</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Encuestas</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/profesor/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/profesor/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/profesor/reservas}" class="nav-enlace">Mis Reservas</a>
+                <a th:href="@{/profesor/encuestas}" class="nav-enlace-activo">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Profesor</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="max-w-xl mx-auto">
+            <div class="card">
+                <div class="card-header flex flex-col items-start space-y-2 border-b border-gray-100">
+                    <h2 class="card-titulo text-[#0F766E]" th:text="${encuesta.titulo}"></h2>
+                    <p class="text-sm text-gray-500" th:text="${encuesta.descripcion}"></p>
+                </div>
+                <div class="card-cuerpo">
+                    <form th:action="@{/profesor/encuestas/{id}/responder(id=${encuesta.idEncuesta})}" method="post">
+                        <div th:each="pregunta, iterStat : ${encuesta.preguntas}" class="form-grupo">
+                            <label class="form-label text-gray-900 font-semibold" th:text="${iterStat.count} + '. ' + ${pregunta.texto}"></label>
+                            <textarea th:name="'respuesta_' + ${pregunta.idPregunta}" class="form-input" placeholder="Escribe tu respuesta aquí..." required></textarea>
+                        </div>
+                        <div class="flex space-x-3 mt-8 border-t border-gray-100 pt-6">
+                            <button type="submit" class="btn-primary">Enviar Respuestas</button>
+                            <a th:href="@{/profesor/encuestas}" class="btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

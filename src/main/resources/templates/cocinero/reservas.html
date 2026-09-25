@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Reservas - Cocina</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px" class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Reservas</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/cocinero/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/cocinero/platos}" class="nav-enlace">Platos</a>
+                <a th:href="@{/cocinero/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/cocinero/reservas}" class="nav-enlace-activo">Reservas</a>
+                <a th:href="@{/cocinero/encuestas}" class="nav-enlace">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario"
+                        th:text="${nombreUsuario}">Cocinero</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <h2 class="titulo-seccion">Gestión de Reservas</h2>
+        <p class="subtitulo-seccion">Controla las reservas y marca su estado de recogida.</p>
+
+        <div class="card p-6 mb-6">
+            <form th:action="@{/cocinero/reservas}" method="get" class="flex gap-4 items-end">
+                <div class="form-grupo mb-0">
+                    <label for="fecha" class="form-label">Filtrar por fecha</label>
+                    <input type="date" id="fecha" name="fecha" th:value="${fechaFiltro}" class="form-input">
+                </div>
+                <button type="submit" class="btn-primary">Buscar</button>
+            </form>
+        </div>
+
+        <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+        <div th:if="${error}" class="alerta-error" th:text="${error}"></div>
+
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Menú</th>
+                        <th>Profesor</th>
+                        <th>A pagar</th>
+                        <th>Pago</th>
+                        <th>Estado</th>
+                        <th>Código de Recogida</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="reserva : ${reservas}">
+                        <td th:text="${reserva.idReserva}"></td>
+                        <td class="font-medium">
+                            <span th:text="${reserva.menu.primerPlato.nombre}"></span>,
+                            <span th:text="${reserva.menu.segundoPlato.nombre}"></span>,
+                            <span th:text="${reserva.menu.postre.nombre}"></span> y
+                            <span th:text="${reserva.menu.bebida.nombre}"></span>
+                        </td>
+                        <td th:text="${reserva.usuario.nombre}"></td>
+                        <td class="font-medium" th:text="${reserva.menu.precio + ' €'}"></td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span th:if="${reserva.estadoPago == 'PAGADO'}" class="badge-verde">Pagado</span>
+
+                                <div th:if="${reserva.estadoPago == 'PENDIENTE' && reserva.metodoPago == 'CAJA'}"
+                                    class="flex items-center gap-2">
+                                    <span class="badge-naranja">Pendiente · Caja</span>
+                                    <form th:action="@{/cocinero/reservas/{id}/pago(id=${reserva.idReserva})}"
+                                        method="post" class="inline">
+                                        <button type="submit" class="btn-primary btn-sm">Cobrar</button>
+                                    </form>
+                                </div>
+
+                                <span th:if="${reserva.estadoPago == 'PENDIENTE' && reserva.metodoPago != 'CAJA'}"
+                                    class="badge-gris">Online pendiente</span>
+
+                                <span th:if="${reserva.metodoPago == 'TARJETA'}" class="text-base"
+                                    title="Tarjeta">💳</span>
+                                <span th:if="${reserva.metodoPago == 'BIZUM'}" class="text-base" title="Bizum">📱</span>
+                                <span th:if="${reserva.metodoPago == 'CAJA'}" class="text-base"
+                                    title="En caja">🏧</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div
+                                th:switch="${#strings.toUpperCase(#strings.trim(reserva.estado != null ? reserva.estado : 'PENDIENTE'))}">
+                                <span th:case="'PENDIENTE'" class="badge-naranja">PENDIENTE</span>
+                                <span th:case="'RECOGIDO'" class="badge-verde">RECOGIDO</span>
+                                <span th:case="'CANCELADO'" class="badge-rojo">CANCELADO</span>
+                                <span th:case="'NO_RECOGIDO'" class="badge-gris">NO RECOGIDO</span>
+                                <span th:case="*" class="badge-gris">DESCONOCIDO</span>
+                            </div>
+                        </td>
+                        <td th:text="${reserva.codigoRecogida}"></td>
+                        <td>
+                            <form th:action="@{/cocinero/reservas/{id}/estado(id=${reserva.idReserva})}" method="post">
+                                <select name="estado" class="form-input py-1.5 w-36" onchange="this.form.submit()">
+                                    <option value="PENDIENTE" th:selected="${reserva.estado == 'PENDIENTE'}">PENDIENTE
+                                    </option>
+                                    <option value="RECOGIDO" th:selected="${reserva.estado == 'RECOGIDO'}">RECOGIDO
+                                    </option>
+                                    <option value="CANCELADO" th:selected="${reserva.estado == 'CANCELADO'}">CANCELADO
+                                    </option>
+                                    <option value="NO_RECOGIDO" th:selected="${reserva.estado == 'NO_RECOGIDO'}">NO
+                                        RECOGIDO</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+
+</html>

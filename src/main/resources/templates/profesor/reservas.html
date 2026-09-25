@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Reservas - Profesor</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Mis Reservas</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/profesor/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/profesor/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/profesor/reservas}" class="nav-enlace-activo">Mis Reservas</a>
+                <a th:href="@{/profesor/encuestas}" class="nav-enlace">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario"
+                        th:text="${nombreUsuario}">Profesor</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <h2 class="titulo-seccion">Mi Historial de Reservas</h2>
+        <p class="subtitulo-seccion">Consulta y gestiona tus reservas.</p>
+
+        <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+        <div th:if="${error}" class="alerta-error" th:text="${error}"></div>
+
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha Menú</th>
+                        <th>Detalles</th>
+                        <th>Estado</th>
+                        <th>Pago</th>
+                        <th>Precio / Pagado</th>
+                        <th>Código de Recogida</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="reserva : ${reservas}">
+                        <td th:text="${reserva.idReserva}"></td>
+                        <td class="font-medium" th:text="${reserva.menu.fecha}"></td>
+                        <td>
+                            <div class="text-xs text-gray-500 mb-1">
+                                <span class="font-medium text-gray-700">1º:</span> <span
+                                    th:text="${reserva.menu.primerPlato.nombre}"></span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                <span class="font-medium text-gray-700">2º:</span> <span
+                                    th:text="${reserva.menu.segundoPlato.nombre}"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:if="${reserva.estado == 'PENDIENTE'}" class="badge-naranja">PENDIENTE</span>
+                            <span th:if="${reserva.estado == 'RECOGIDO'}" class="badge-verde">RECOGIDO</span>
+                            <span th:if="${reserva.estado == 'CANCELADO'}" class="badge-rojo">CANCELADO</span>
+                            <span th:if="${reserva.estado == 'NO_RECOGIDO'}" class="badge-gris">NO RECOGIDO</span>
+                        </td>
+                        <td>
+                            <div class="flex items-center gap-1.5">
+                                <span th:if="${reserva.estadoPago == 'PAGADO'}" class="badge-verde">Pagado</span>
+                                <span th:if="${reserva.estadoPago == 'PENDIENTE' && reserva.metodoPago == 'CAJA'}"
+                                    class="badge-naranja">Pendiente (caja)</span>
+                                <span th:if="${reserva.estadoPago == 'PENDIENTE' && reserva.metodoPago != 'CAJA'}"
+                                    class="badge-rojo">Sin pagar</span>
+
+                                <span th:if="${reserva.metodoPago == 'TARJETA'}" class="text-base"
+                                    title="Tarjeta">💳</span>
+                                <span th:if="${reserva.metodoPago == 'BIZUM'}" class="text-base" title="Bizum">📱</span>
+                                <span th:if="${reserva.metodoPago == 'CAJA'}" class="text-base"
+                                    title="En caja">🏧</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="font-medium" th:text="${reserva.menu.precio + ' €'}"></span>
+                            <span th:if="${reserva.precioPagado != null}"
+                                th:text="${' (Pagado: ' + reserva.precioPagado + ' €)'}"
+                                class="text-xs text-emerald-600 block mt-1"></span>
+                        </td>
+                        <td th:text="${reserva.codigoRecogida}"></td>
+                        <td>
+                            <form th:if="${reserva.estado == 'PENDIENTE'}"
+                                th:action="@{/profesor/reservas/{id}/cancelar(id=${reserva.idReserva})}" method="post">
+                                <button type="submit" class="btn-danger btn-sm"
+                                    onclick="return confirm('¿Seguro que deseas cancelar esta reserva?');">Cancelar</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+
+</body>
+
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Encuestas - Profesor</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Encuestas</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/profesor/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/profesor/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/profesor/reservas}" class="nav-enlace">Mis Reservas</a>
+                <a th:href="@{/profesor/encuestas}" class="nav-enlace-activo">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Profesor</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="titulo-seccion">Encuestas de Calidad</h2>
+                <p class="subtitulo-seccion">Responde las encuestas pendientes para mejorar el servicio.</p>
+            </div>
+            <a th:href="@{/profesor/encuestas/mis-respuestas}" class="btn-secondary">Mis respuestas anteriores</a>
+        </div>
+        
+        <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+        
+        <h3 class="text-xl font-bold text-gray-900 mb-6">Encuestas Pendientes</h3>
+        
+        <div th:if="${pendientes.isEmpty()}" class="alerta-info bg-emerald-50 border-emerald-200 text-emerald-700">¡Genial! Has respondido a todas las encuestas activas.</div>
+        
+        <div th:unless="${pendientes.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div th:each="encuesta : ${pendientes}" class="card flex flex-col justify-between hover:border-[#0F766E] transition-colors border-2">
+                <div class="card-header border-b border-gray-100">
+                    <h4 class="card-titulo text-[#0F766E]" th:text="${encuesta.titulo}"></h4>
+                </div>
+                <div class="card-cuerpo flex-grow">
+                    <p class="text-gray-600 text-sm mb-4" th:text="${encuesta.descripcion}"></p>
+                    <p class="text-xs text-gray-400">Publicado: <span th:text="${encuesta.fechaCreacion}"></span></p>
+                </div>
+                <div class="card-pie p-4">
+                    <a th:href="@{/profesor/encuestas/{id}/responder(id=${encuesta.idEncuesta})}" class="btn-primary w-full text-center">Responder</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

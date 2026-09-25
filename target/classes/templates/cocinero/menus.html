@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Menús - Cocina</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Menús</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/cocinero/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/cocinero/platos}" class="nav-enlace">Platos</a>
+                <a th:href="@{/cocinero/menus}" class="nav-enlace-activo">Menús</a>
+                <a th:href="@{/cocinero/reservas}" class="nav-enlace">Reservas</a>
+                <a th:href="@{/cocinero/encuestas}" class="nav-enlace">Encuestas</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Cocinero</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="titulo-seccion">Gestión de Menús</h2>
+                <p class="subtitulo-seccion">Planifica y administra los menús diarios disponibles.</p>
+            </div>
+            <a th:href="@{/cocinero/menus/nuevo}" class="btn-primary">Programar Nuevo Menú</a>
+        </div>
+
+        <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Primero</th>
+                        <th>Segundo</th>
+                        <th>Postre</th>
+                        <th>Bebida</th>
+                        <th>Precio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="menu : ${menus}">
+                        <td class="font-medium" th:text="${menu.fecha}"></td>
+                        <td th:text="${menu.primerPlato.nombre}"></td>
+                        <td th:text="${menu.segundoPlato.nombre}"></td>
+                        <td th:text="${menu.postre.nombre}"></td>
+                        <td th:text="${menu.bebida.nombre}"></td>
+                        <td class="font-medium" th:text="${menu.precio + ' €'}"></td>
+                        <td>
+                            <div class="flex gap-2">
+                                <a th:href="@{/cocinero/menus/{id}/editar(id=${menu.idMenu})}" class="btn-secondary btn-sm">Editar</a>
+                                <form th:action="@{/cocinero/menus/{id}/eliminar(id=${menu.idMenu})}" method="post" class="inline">
+                                    <button type="submit" class="btn-danger btn-sm" onclick="return confirm('¿Eliminar este menú?');">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

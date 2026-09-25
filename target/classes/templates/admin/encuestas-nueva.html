@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva Encuesta - Panel de Administración</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Inicio</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/admin/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/admin/usuarios}" class="nav-enlace">Usuarios</a>
+                <a th:href="@{/admin/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/admin/reservas}" class="nav-enlace">Reservas</a>
+                <a th:href="@{/admin/encuestas}" class="nav-enlace-activo">Encuestas</a>
+                <a th:href="@{/admin/avisos}" class="nav-enlace">Avisos</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Admin</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="max-w-xl mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-titulo">Crear Nueva Encuesta</h2>
+                </div>
+                
+                <div class="card-cuerpo">
+                    <form th:action="@{/admin/encuestas/nueva}" method="post">
+                        <div class="form-grupo">
+                            <label for="titulo" class="form-label">Título de la encuesta</label>
+                            <input type="text" id="titulo" name="titulo" class="form-input" required>
+                        </div>
+                        <div class="form-grupo">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea id="descripcion" name="descripcion" class="form-input"></textarea>
+                        </div>
+                        
+                        <hr class="my-6 border-gray-200">
+                        <h3 class="text-base font-semibold text-gray-900 mb-4">Preguntas</h3>
+                        
+                        <div id="contenedor-preguntas">
+                            <div class="form-grupo">
+                                <label class="form-label">Pregunta 1</label>
+                                <input type="text" name="preguntas" class="form-input" required>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn-secondary btn-sm mt-2" onclick="añadirPregunta()">+ Añadir Pregunta</button>
+
+                        <div class="flex space-x-3 mt-8 pt-6 border-t border-gray-200">
+                            <button type="submit" class="btn-primary">Guardar Encuesta</button>
+                            <a th:href="@{/admin/encuestas}" class="btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let contadorPreguntas = 1;
+        function añadirPregunta() {
+            contadorPreguntas++;
+            const contenedor = document.getElementById('contenedor-preguntas');
+            const div = document.createElement('div');
+            div.className = 'form-grupo';
+            div.innerHTML = `
+                <label class="form-label">Pregunta ${contadorPreguntas}</label>
+                <div class="flex gap-2">
+                    <input type="text" name="preguntas" class="form-input" required>
+                    <button type="button" class="btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">X</button>
+                </div>
+            `;
+            contenedor.appendChild(div);
+        }
+    </script>
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+</html>

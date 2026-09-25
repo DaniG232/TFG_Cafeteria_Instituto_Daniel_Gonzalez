@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Usuarios - Panel de Administración</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px"
+                        class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Usuarios</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a th:href="@{/admin/inicio}" class="nav-enlace">Inicio</a>
+                <a th:href="@{/admin/usuarios}" class="nav-enlace-activo">Usuarios</a>
+                <a th:href="@{/admin/menus}" class="nav-enlace">Menús</a>
+                <a th:href="@{/admin/reservas}" class="nav-enlace">Reservas</a>
+                <a th:href="@{/admin/encuestas}" class="nav-enlace">Encuestas</a>
+                <a th:href="@{/admin/avisos}" class="nav-enlace">Avisos</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div th:replace="~{fragments/notificaciones :: panel}"></div>
+                <span class="nav-saludo">¡Hola, <span class="nav-usuario"
+                        th:text="${nombreUsuario}">Admin</span>!</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="titulo-seccion">Gestión de Usuarios</h2>
+                <p class="subtitulo-seccion">Administra los roles y el acceso de los usuarios del sistema.</p>
+            </div>
+            <a th:href="@{/admin/usuarios/nuevo}" class="btn-primary">Nuevo Usuario</a>
+        </div>
+
+        <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="usuario : ${usuarios}">
+                        <td class="font-medium" th:text="${usuario.email}"></td>
+                        <td th:text="${usuario.nombre}"></td>
+                        <td>
+                            <form th:action="@{/admin/usuarios/{email}/rol(email=${usuario.email})}" method="post"
+                                class="flex gap-2 items-center">
+                                <select name="rol" class="form-input py-1.5 w-32">
+                                    <option value="PROFESOR" th:selected="${usuario.rol.name() == 'PROFESOR'}">PROFESOR
+                                    </option>
+                                    <option value="COCINERO" th:selected="${usuario.rol.name() == 'COCINERO'}">COCINERO
+                                    </option>
+                                    <option value="ADMIN" th:selected="${usuario.rol.name() == 'ADMIN'}">ADMIN</option>
+                                </select>
+                                <button type="submit" class="btn-secondary btn-sm">Guardar</button>
+                            </form>
+                        </td>
+                        <td>
+                            <span th:if="${usuario.estado}" class="badge-verde">Activo</span>
+                            <span th:unless="${usuario.estado}" class="badge-gris">Inactivo</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/usuarios/{email}/estado(email=${usuario.email})}" method="post"
+                                class="inline">
+                                <input type="hidden" name="estado" th:value="${!usuario.estado}" />
+                                <button type="submit"
+                                    th:class="${usuario.estado ? 'btn-danger btn-sm' : 'btn-primary btn-sm'}"
+                                    th:text="${usuario.estado ? 'Desactivar' : 'Activar'}">
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+</body>
+
+</html>

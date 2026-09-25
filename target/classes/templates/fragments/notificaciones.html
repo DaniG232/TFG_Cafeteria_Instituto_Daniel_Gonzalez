@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragmento del Panel de Notificaciones -->
+    <div th:fragment="panel" class="relative" id="notif-container">
+        <button id="notif-btn" class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span id="notif-badge"
+                  class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs
+                         rounded-full flex items-center justify-center font-bold hidden">
+              0
+            </span>
+        </button>
+
+        <div id="notif-panel"
+             class="hidden absolute right-0 top-12 w-96 bg-white rounded-xl border border-gray-200
+                    shadow-xl z-50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                <span class="font-semibold text-gray-900 text-sm">Notificaciones</span>
+                <div class="flex items-center gap-2">
+                    <button id="notif-leer-todas"
+                            class="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600
+                                   transition-colors" title="Marcar todas como leídas">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button id="notif-eliminar-leidas"
+                            class="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600
+                                   transition-colors" title="Eliminar leídas">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5
+                                     4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="notif-lista" class="max-h-96 overflow-y-auto divide-y divide-gray-50">
+                <!-- Se rellena con JavaScript -->
+            </div>
+
+            <div class="px-4 py-3 border-t border-gray-100 text-center">
+                <a th:href="@{/notificaciones}" class="text-sm text-[#0F766E] hover:text-[#0D6B63] font-medium">Ver todas</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fragmento de Scripts -->
+    <th:block th:fragment="scripts">
+        <script>
+            // ── Notificaciones ──────────────────────────────────────
+            const notifBtn       = document.getElementById('notif-btn');
+            const notifPanel     = document.getElementById('notif-panel');
+            const notifBadge     = document.getElementById('notif-badge');
+            const notifLista     = document.getElementById('notif-lista');
+            const btnLeerTodas   = document.getElementById('notif-leer-todas');
+            const btnEliminar    = document.getElementById('notif-eliminar-leidas');
+
+            const iconosPorTipo = {
+              NUEVA_RESERVA:           '🍽️',
+              RESERVA_LISTA:           '✅',
+              NUEVA_ENCUESTA:          '📋',
+              NUEVA_RESPUESTA_ENCUESTA:'💬',
+              AVISO_ADMIN:             '📢',
+              NUEVO_USUARIO:           '👤',
+            };
+
+            function renderizarNotificaciones(data) {
+              const count = data.noLeidas;
+              if (count > 0) {
+                notifBadge.textContent = count > 99 ? '99+' : count;
+                notifBadge.classList.remove('hidden');
+              } else {
+                notifBadge.classList.add('hidden');
+              }
+
+              if (data.notificaciones.length === 0) {
+                notifLista.innerHTML = `
+                  <div class="px-4 py-10 text-center text-gray-400 text-sm">
+                    No tienes notificaciones
+                  </div>`;
+                return;
+              }
+
+              notifLista.innerHTML = data.notificaciones.map(n => `
+                <div class="notif-item px-4 py-3 cursor-pointer transition-colors
+                            ${n.leida ? 'bg-white hover:bg-gray-50' : 'bg-[#F0FDF9] hover:bg-[#e6faf7]'}"
+                     data-id="${n.id}" data-url="${n.urlAccion || ''}">
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg mt-0.5 flex-shrink-0">${iconosPorTipo[n.tipo] || '🔔'}</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 leading-tight">${n.titulo}</p>
+                      ${n.mensaje ? `<p class="text-xs text-gray-500 mt-0.5 leading-tight">${n.mensaje}</p>` : ''}
+                      <p class="text-xs text-gray-400 mt-1">${n.fechaCreacion}</p>
+                    </div>
+                    ${!n.leida ? '<span class="w-2 h-2 bg-[#0F766E] rounded-full flex-shrink-0 mt-1.5"></span>' : ''}
+                  </div>
+                </div>
+              `).join('');
+
+              document.querySelectorAll('.notif-item').forEach(el => {
+                el.addEventListener('click', () => {
+                  const id  = el.dataset.id;
+                  const url = el.dataset.url;
+                  fetch(`/api/notificaciones/${id}/leer`, { method: 'POST' })
+                    .finally(() => { if (url) window.location.href = url; else cargarNotificaciones(); });
+                });
+              });
+            }
+
+            function cargarNotificaciones() {
+              fetch('/api/notificaciones')
+                .then(r => r.json())
+                .then(renderizarNotificaciones)
+                .catch(() => {});
+            }
+
+            notifBtn.addEventListener('click', e => {
+              e.stopPropagation();
+              notifPanel.classList.toggle('hidden');
+              if (!notifPanel.classList.contains('hidden')) cargarNotificaciones();
+            });
+
+            document.addEventListener('click', e => {
+              const container = document.getElementById('notif-container');
+              if (container && !container.contains(e.target)) {
+                notifPanel.classList.add('hidden');
+              }
+            });
+
+            btnLeerTodas.addEventListener('click', e => {
+              e.stopPropagation();
+              fetch('/api/notificaciones/leer-todas', { method: 'POST' })
+                .then(() => cargarNotificaciones());
+            });
+
+            btnEliminar.addEventListener('click', e => {
+              e.stopPropagation();
+              fetch('/api/notificaciones/eliminar-leidas', { method: 'DELETE' })
+                .then(() => cargarNotificaciones());
+            });
+
+            cargarNotificaciones();
+            setInterval(cargarNotificaciones, 30000);
+        </script>
+    </th:block>
+</body>
+</html>

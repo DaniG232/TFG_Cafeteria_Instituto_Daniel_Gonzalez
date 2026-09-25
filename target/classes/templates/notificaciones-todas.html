@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Todas las Notificaciones - Cafetería</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+
+<body class="pagina">
+    <nav class="nav">
+        <div class="nav-contenido">
+            <div class="flex items-center gap-3">
+                <a th:href="@{/}" class="flex items-center gap-4 hover:opacity-80 transition-opacity">
+                    <img th:src="@{/imagenes/logo.png}" alt="La Pausa"
+                        style="width:48px; height:48px; margin-left: 10px" class="object-contain" />
+                    <span class="font-bold text-gray-900 text-lg">
+                        La Pausa
+                    </span>
+                </a>
+                <span class="text-gray-300">|</span>
+                <span class="nav-enlace-activo">Notificaciones</span>
+            </div>
+
+            <div class="md:flex space-x-6">
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/inicio}" class="nav-enlace">Volver al Panel</a>
+                <a sec:authorize="hasRole('COCINERO')" th:href="@{/cocinero/inicio}" class="nav-enlace">Volver al
+                    Panel</a>
+                <a sec:authorize="hasRole('PROFESOR')" th:href="@{/profesor/inicio}" class="nav-enlace">Volver al
+                    Inicio</a>
+            </div>
+            <div class="flex items-center space-x-4">
+    <div th:replace="~{fragments/notificaciones :: panel}"></div>
+    <a th:href="@{/}" class="nav-enlace ml-auto" style="background:#1D383B;color:#fff;padding:4px 8px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>Volver al inicio</a>
+    <span class="nav-saludo">¡Hola, <span class="nav-usuario" th:text="${nombreUsuario}">Usuario</span>!</span>
+    <form th:action="@{/logout}" method="post" class="inline">
+        <button type="submit" class="btn-secondary btn-sm">Cerrar sesión</button>
+    </form>
+</div>
+        </div>
+    </nav>
+
+    <main class="contenido-principal">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="titulo-seccion">Todas tus notificaciones</h2>
+                <p class="subtitulo-seccion">Historial completo de avisos y alertas.</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="marcarTodas()" class="btn-secondary btn-sm">Marcar todas como leídas</button>
+                <button onclick="limpiarLeidas()" class="btn-danger btn-sm">Eliminar notificaciones leídas</button>
+            </div>
+        </div>
+
+        <div class="card overflow-hidden">
+            <div th:if="${notificaciones.empty}" class="p-16 text-center">
+                <div class="text-4xl mb-4">🔔</div>
+                <p class="text-gray-500 font-medium">No tienes notificaciones en este momento.</p>
+                <p class="text-sm text-gray-400 mt-1">Te avisaremos cuando ocurra algo importante.</p>
+            </div>
+
+            <div th:unless="${notificaciones.empty}" class="divide-y divide-gray-100">
+                <div th:each="n : ${notificaciones}" class="p-5 flex items-start gap-4 transition-colors"
+                    th:classappend="${n.leida ? 'bg-white' : 'bg-emerald-50/50'}">
+
+                    <span class="text-2xl mt-1"
+                        th:text="${n.tipo == 'NUEVA_RESERVA' ? '🍽️' : (n.tipo == 'RESERVA_LISTA' ? '✅' : (n.tipo == 'NUEVA_ENCUESTA' ? '📋' : (n.tipo == 'NUEVA_RESPUESTA_ENCUESTA' ? '💬' : (n.tipo == 'AVISO_ADMIN' ? '📢' : '👤'))))}">🔔
+                    </span>
+
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start gap-4">
+                            <h4 class="font-semibold text-gray-900 truncate" th:text="${n.titulo}">Título</h4>
+                            <span class="text-xs text-gray-400 whitespace-nowrap mt-1"
+                                th:text="${#temporals.format(n.fechaCreacion, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1 line-clamp-2" th:text="${n.mensaje}">Mensaje</p>
+
+                        <div class="mt-4 flex gap-4 items-center">
+                            <a th:if="${n.urlAccion != null and !n.urlAccion.empty}" th:href="@{${n.urlAccion}}"
+                                th:onclick="'marcarLeida(' + ${n.idNotificacion} + ')'"
+                                class="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1">
+                                Ir a la notificación
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                            <button th:if="${!n.leida}" th:onclick="'marcarLeida(' + ${n.idNotificacion} + ', true)'"
+                                class="text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors">
+                                Marcar como leída
+                            </button>
+                        </div>
+                    </div>
+
+                    <span th:if="${!n.leida}"
+                        class="w-2.5 h-2.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0 shadow-sm shadow-emerald-200"></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/notificaciones :: scripts}"></div>
+
+    <script>
+        function marcarLeida(id, reload = false) {
+            fetch(`/api/notificaciones/${id}/leer`, { method: 'POST' })
+                .then(() => {
+                    if (reload) window.location.reload();
+                });
+        }
+
+        function marcarTodas() {
+            fetch('/api/notificaciones/leer-todas', { method: 'POST' })
+                .then(() => window.location.reload());
+        }
+
+        function limpiarLeidas() {
+            if (confirm('¿Seguro que deseas eliminar todas las notificaciones leídas?')) {
+                fetch('/api/notificaciones/eliminar-leidas', { method: 'DELETE' })
+                    .then(() => window.location.reload());
+            }
+        }
+    </script>
+</body>
+
+</html>
